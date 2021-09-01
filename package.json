@@ -1,0 +1,32 @@
+{
+  "name": "home-automation",
+  "version": "1.0.0",
+  "description": "Personal server for my home automation",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "start": "node .",
+    "start:dev": "node --loader ts-node/esm src/index.ts",
+    "format": "prettier --write 'src/**/*.ts'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/koa": "^2.13.4",
+    "@types/koa__router": "^8.0.7",
+    "@types/node": "^16.7.1",
+    "prettier": "^2.3.2",
+    "ts-node": "^10.2.1",
+    "tslib": "^2.3.1",
+    "typescript": "^4.3.5"
+  },
+  "dependencies": {
+    "@koa/router": "^10.1.1",
+    "koa": "^2.13.1",
+    "koa-body": "^4.2.0",
+    "tplink-cloud-api": "^0.6.1",
+    "tplink-lightbulb": "^1.7.4"
+  }
+}
