@@ -1,3 +1,4 @@
+// @see https://github.com/konsumer/tplink-lightbulb
 declare module "tplink-lightbulb" {
   import { EventEmitter } from "events";
 
@@ -110,7 +111,7 @@ declare module "tplink-lightbulb" {
     power(
       powerState: boolean,
       transition: number,
-      options: {
+      options?: {
         mode: string;
         hue: number;
         saturation: number;
