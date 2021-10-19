@@ -3,12 +3,11 @@ import TPLSmartDevice from "tplink-lightbulb";
 import { officeLamp, officeSwitch, statusLamp } from "./tp-link.js";
 
 let meetingInProgress = false;
-let preMeetingState: TPLSmartDevice.DeviceInfo;
 
 async function startMeeting() {
   if (!meetingInProgress) {
     meetingInProgress = true;
-    preMeetingState = await statusLamp.device.info();
+    statusLamp.saveState();
   }
 }
 
@@ -31,21 +30,20 @@ export const onAirRoute: Router.Middleware<{}, {}> = async (ctx, next) => {
       break;
     case "audio started":
       await startMeeting();
-      statusLamp.turnOnOrangeSignal();
+      statusLamp.turnOnYellowSignal();
       break;
     case "camera stopped":
       // Video may be disabled during a meeting
       // don't assume it means the meeting is over
       if (meetingInProgress) {
-        statusLamp.turnOnOrangeSignal();
+        statusLamp.turnOnYellowSignal();
       }
       officeLamp.turnOff();
       officeSwitch.turnOff();
       break;
     case "audio stopped":
       meetingInProgress = false;
-      statusLamp.turnOff();
-      // TODO: Add restore of previous light state
+      statusLamp.restoreState();
       break;
     default:
       console.log(`Ignoring unknown event "${event}"`);

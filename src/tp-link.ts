@@ -3,7 +3,10 @@ import Router from "@koa/router";
 import TPLSmartDevice, { Device } from "tplink-lightbulb";
 
 export const bedroomLamp = getLight("Lamp", process.env.STATUS_LAMP_IP);
-export const statusLamp = getLight("Status Lamp", process.env.STATUS_LAMP_IP);
+export const statusLamp = getLight(
+  "Living Room Lamp",
+  process.env.STATUS_LAMP_IP
+);
 export const officeLamp = getSwitch("Office Lamp", process.env.OFFICE_LAMP_IP);
 export const officeSwitch = getSwitch(
   "Office switch",
@@ -44,14 +47,21 @@ export function getLight(name: string, ip?: string) {
   const device = initialize(name, ip);
 
   async function setState(
-    state: { hue: number; saturation: number; brightness: number },
+    state: Partial<TPLSmartDevice.DeviceInfo["light_state"]>,
     seconds = 1
   ) {
     if (!device.ip || device.ip === "0") {
       console.warn("Skipping setting", name, "switch because it was not found");
       return;
     }
-    const newState = { mode: "normal", color_temp: 0, ...state };
+    const newState = {
+      mode: "normal",
+      color_temp: 0,
+      brightness: 0,
+      saturation: 0,
+      hue: 0,
+      ...state,
+    };
     console.log("new", name, "light state", newState);
     try {
       const response = await retryIfNoResponse(
@@ -68,10 +78,12 @@ export function getLight(name: string, ip?: string) {
       console.error("Error setting", name, "lamp state", error);
     }
   }
+  const savedState: Partial<TPLSmartDevice.DeviceInfo["light_state"]> = {};
 
   return {
     device,
     setState,
+    savedState,
     async turnOn() {
       await setState({ hue: 60, saturation: 20, brightness: 100 });
     },
@@ -92,8 +104,17 @@ export function getLight(name: string, ip?: string) {
     async turnOnRedSignal() {
       await setState({ hue: 10, saturation: 100, brightness: 100 });
     },
-    async turnOnOrangeSignal() {
-      await setState({ hue: 40, saturation: 100, brightness: 100 });
+    async turnOnYellowSignal() {
+      await setState({ hue: 60, saturation: 100, brightness: 100 });
+    },
+    /** Keep track of current state to restore later */
+    async saveState() {
+      const info = await device.info();
+      // Need to retain reference to object
+      Object.assign(savedState, info.light_state);
+    },
+    async restoreState() {
+      return await setState(savedState);
     },
   };
 }

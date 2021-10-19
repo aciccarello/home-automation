@@ -11,11 +11,9 @@ const bash = Deno.run({
   stdin: "piped",
 });
 
-// const command = "log stream | grep -e audioEngine -e kCameraStream";
-// // const command = "log stream";
-// await bash.stdin.write(encoder.encode(command));
-
-// await bash.stdin.close();
+const CAMERA_LOG = "kCameraStream";
+const AUDIO_START_LOG = "HALS_Device::_GetCombinedVolumeScalar";
+const AUDIO_STOP_LOG = "AUBeamIt: Reset";
 
 // Server loop running inside IIFE
 (async () => {
@@ -23,15 +21,19 @@ const bash = Deno.run({
   for await (const line of readLines(bash.stdout)) {
     // TODO: Find something that works with slack calls
     // TODO: Move to a single regex test
-    if (line.includes("audioEngine") || line.includes("kCameraStream")) {
+    if (
+      [CAMERA_LOG, AUDIO_START_LOG, AUDIO_STOP_LOG].some((keyword) =>
+        line.includes(keyword)
+      )
+    ) {
       let event: string | undefined = undefined;
-      if (line.includes("audioEngineStarting")) {
+      if (line.includes(AUDIO_START_LOG)) {
         event = "audio started";
-      } else if (line.includes("audioEngineStopped")) {
+      } else if (line.includes(AUDIO_STOP_LOG)) {
         event = "audio stopped";
-      } else if (line.includes("kCameraStreamStart")) {
+      } else if (line.includes(CAMERA_LOG + "Start")) {
         event = "camera started";
-      } else if (line.includes("kCameraStreamStop")) {
+      } else if (line.includes(CAMERA_LOG + "Stop")) {
         event = "camera stopped";
       }
       // Debugging

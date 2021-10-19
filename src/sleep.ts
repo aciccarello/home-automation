@@ -1,5 +1,5 @@
 import Router from "@koa/router";
-import { bedroomLamp } from "./tp-link.js";
+import { bedroomLamp, officeLamp } from "./tp-link.js";
 
 export const sleepRoute: Router.Middleware<{}, {}> = async (ctx, next) => {
   ctx.accepts("application/json");
@@ -13,6 +13,7 @@ export const sleepRoute: Router.Middleware<{}, {}> = async (ctx, next) => {
   switch (event) {
     case "alarm_alert_start":
       bedroomLamp.startSunRise();
+      officeLamp.turnOn(); // TODO: replace with office switch
       break;
     case "time_to_bed_alarm_alert":
     case "sleep_tracking_paused":
@@ -27,6 +28,7 @@ export const sleepRoute: Router.Middleware<{}, {}> = async (ctx, next) => {
     case "sleep_tracking_started":
     case "sleep_tracking_stopped":
       bedroomLamp.turnOff();
+      officeLamp.turnOff(); // TODO: replace with office switch
       break;
     default:
       console.log(`Ignoring event "${event}"`);
