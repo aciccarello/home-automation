@@ -11,15 +11,14 @@ const bash = Deno.run({
   stdin: "piped",
 });
 
-const CAMERA_LOG = "kCameraStream";
-const AUDIO_START_LOG = "HALS_Device::_GetCombinedVolumeScalar";
-const AUDIO_STOP_LOG = "AUBeamIt: Reset";
+const CAMERA_LOG = "CMIOHardware.cpp";
+const AUDIO_START_LOG = "kTCCServiceMicrophone";
+const AUDIO_STOP_LOG = "stopAudioEngine";
 
 // Server loop running inside IIFE
 (async () => {
   console.log("Listening for events");
   for await (const line of readLines(bash.stdout)) {
-    // TODO: Find something that works with slack calls
     // TODO: Move to a single regex test
     if (
       [CAMERA_LOG, AUDIO_START_LOG, AUDIO_STOP_LOG].some((keyword) =>
@@ -31,10 +30,12 @@ const AUDIO_STOP_LOG = "AUBeamIt: Reset";
         event = "audio started";
       } else if (line.includes(AUDIO_STOP_LOG)) {
         event = "audio stopped";
-      } else if (line.includes(CAMERA_LOG + "Start")) {
-        event = "camera started";
-      } else if (line.includes(CAMERA_LOG + "Stop")) {
-        event = "camera stopped";
+      } else if (line.includes(CAMERA_LOG)) {
+        if (line.includes("StartStream")) {
+          event = "camera started";
+        } else if (line.includes("StopStream")) {
+          event = "camera stopped";
+        }
       }
       // Debugging
       // const encoder = new TextEncoder();

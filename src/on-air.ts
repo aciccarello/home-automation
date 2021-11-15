@@ -5,10 +5,12 @@ import { officeLamp, officeSwitch, statusLamp } from "./tp-link.js";
 let meetingInProgress = false;
 
 async function startMeeting() {
+  const originalInProgressState = meetingInProgress;
   if (!meetingInProgress) {
     meetingInProgress = true;
     statusLamp.saveState();
   }
+  return originalInProgressState;
 }
 
 export const onAirRoute: Router.Middleware<{}, {}> = async (ctx, next) => {
@@ -29,8 +31,10 @@ export const onAirRoute: Router.Middleware<{}, {}> = async (ctx, next) => {
       statusLamp.turnOnRedSignal();
       break;
     case "audio started":
-      await startMeeting();
-      statusLamp.turnOnYellowSignal();
+      const wasInProgress = await startMeeting();
+      if (!wasInProgress) {
+        statusLamp.turnOnYellowSignal();
+      }
       break;
     case "camera stopped":
       // Video may be disabled during a meeting
