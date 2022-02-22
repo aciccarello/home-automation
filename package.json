@@ -9,6 +9,7 @@
     "start": "node .",
     "start:dev": "node --loader ts-node/esm src/index.ts",
     "start:mac-watcher": "deno run --allow-run=log,ioreg --allow-net=localhost:3000 src/mac-watcher.ts",
+    "scan": "tplink-lightbulb scan",
     "format": "prettier --write 'src/**/*.ts'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

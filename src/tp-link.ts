@@ -2,14 +2,17 @@
 import Router from "@koa/router";
 import TPLSmartDevice, { Device } from "tplink-lightbulb";
 
-export const bedroomLamp = getLight("Lamp", process.env.BEDROOM_LAMP_IP);
+export const bedroomLamp = getLight(
+  "Bedroom Lamp",
+  process.env.BEDROOM_LAMP_IP
+);
 export const statusLamp = getLight(
   "Living Room Lamp",
   process.env.STATUS_LAMP_IP
 );
 export const officeLamp = getSwitch("Office Lamp", process.env.OFFICE_LAMP_IP);
 export const officeSwitch = getDimmerSwitch(
-  "Office switch",
+  "Office Light Switch",
   process.env.OFFICE_SWITCH_IP
 );
 
