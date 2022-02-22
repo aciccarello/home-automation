@@ -16,8 +16,10 @@ export const sleepRoute: Router.Middleware<{}, {}> = async (ctx, next) => {
       officeLamp.turnOn(); // TODO: replace with office switch
       break;
     case "time_to_bed_alarm_alert":
-    case "sleep_tracking_paused":
       bedroomLamp.turnOnNightLight();
+      break;
+    case "sleep_tracking_paused":
+      // Could consider re-enabling night light in future
       break;
     case "alarm_snooze_clicked":
       bedroomLamp.turnOnLow();

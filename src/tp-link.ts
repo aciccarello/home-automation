@@ -8,7 +8,7 @@ export const statusLamp = getLight(
   process.env.STATUS_LAMP_IP
 );
 export const officeLamp = getSwitch("Office Lamp", process.env.OFFICE_LAMP_IP);
-export const officeSwitch = getSwitch(
+export const officeSwitch = getDimmerSwitch(
   "Office switch",
   process.env.OFFICE_SWITCH_IP
 );
@@ -143,6 +143,47 @@ export function getSwitch(name: string, ip?: string) {
     },
     async turnOff() {
       await setState(false);
+    },
+  };
+}
+export function getDimmerSwitch(name: string, ip?: string) {
+  const device = initialize(name, ip);
+
+  async function setState(state: boolean, brightness?: number) {
+    if (!device.ip || device.ip === "0") {
+      console.warn("Skipping setting", name, "switch because it was not found");
+      return;
+    }
+    console.log("Turning", name, state ? "on" : "off");
+    try {
+      const response = await retryIfNoResponse(() =>
+        // TODO: Brightness control doesn't seem to be working
+        device.power(state, 0, brightness != null ? { brightness } : undefined)
+      );
+      console.log("Dimmer switch updated to:", response);
+    } catch (error) {
+      console.error(`Error setting ${name} switch state`, error);
+    }
+  }
+  const savedState: Partial<TPLSmartDevice.DeviceInfo["light_state"]> = {};
+
+  return {
+    device,
+    setState,
+    async turnOn(brightness?: number) {
+      await setState(true, brightness);
+    },
+    async turnOff() {
+      await setState(false);
+    },
+    /** Keep track of current state to restore later */
+    async saveState() {
+      const info = await device.info();
+      // Need to retain reference to object
+      Object.assign(savedState, info.light_state);
+    },
+    async restoreState() {
+      return await setState(Boolean(savedState.on_off), savedState.brightness);
     },
   };
 }

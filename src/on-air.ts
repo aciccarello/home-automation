@@ -9,6 +9,7 @@ async function startMeeting() {
   if (!meetingInProgress) {
     meetingInProgress = true;
     statusLamp.saveState();
+    officeSwitch.saveState();
   }
   return originalInProgressState;
 }
@@ -27,7 +28,7 @@ export const onAirRoute: Router.Middleware<{}, {}> = async (ctx, next) => {
     case "camera started":
       await startMeeting();
       officeLamp.turnOn();
-      officeSwitch.turnOn();
+      officeSwitch.turnOn(100);
       statusLamp.turnOnRedSignal();
       break;
     case "audio started":
@@ -43,7 +44,7 @@ export const onAirRoute: Router.Middleware<{}, {}> = async (ctx, next) => {
         statusLamp.turnOnYellowSignal();
       }
       officeLamp.turnOff();
-      officeSwitch.turnOff();
+      officeSwitch.restoreState();
       break;
     case "audio stopped":
       meetingInProgress = false;

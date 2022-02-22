@@ -112,11 +112,11 @@ declare module "tplink-lightbulb" {
       powerState: boolean,
       transition: number,
       options?: {
-        mode: string;
-        hue: number;
-        saturation: number;
-        color_temp: number;
-        brightness: number;
+        mode?: string;
+        hue?: number;
+        saturation?: number;
+        color_temp?: number;
+        brightness?: number;
       }
     ): TPLResponse<LightState>;
     led(state: boolean): Promise;
