@@ -10,7 +10,7 @@ declare module "tplink-lightbulb" {
   export interface Device {
     ip: string;
     _info: {};
-    _sysinfo: {};
+    _sysinfo: DeviceInfo;
     host: string;
     port: number;
     name: string;

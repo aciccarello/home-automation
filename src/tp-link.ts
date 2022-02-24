@@ -2,6 +2,9 @@
 import Router from "@koa/router";
 import TPLSmartDevice, { Device } from "tplink-lightbulb";
 
+const foundDevices = new Map<string, Device>();
+let searchInProgress: Promise<any> | undefined;
+
 export const bedroomLamp = getLight(
   "Bedroom Lamp",
   process.env.BEDROOM_LAMP_IP
@@ -19,31 +22,51 @@ export const officeSwitch = getDimmerSwitch(
 function initialize(name: string, ip?: string): TPLSmartDevice {
   const device = new TPLSmartDevice(ip);
   if (!device.ip) {
-    console.log(name, "IP not passed. Looking on the network");
+    console.log("Looking on the network for", name);
     // Search for device without awaiting
     findLight(name).then((light) => {
-      device.ip = light.ip;
+      if (light) {
+        device.ip = light.ip;
+      }
     }, console.error);
   }
 
   return device;
 }
-async function findLight(name: string) {
-  return new Promise<Device>((resolve, reject) => {
+
+async function findLight(name: string): Promise<Device | undefined> {
+  if (foundDevices.has(name)) {
+    const light = foundDevices.get(name)!;
+    console.log("Found light in map:", light.name, light.ip);
+    return light;
+  }
+
+  // If still searching but hasn't found this device, try again after current search finishes
+  if (searchInProgress) {
+    return searchInProgress.then(() => findLight(name));
+  }
+
+  searchInProgress = new Promise<Device>((resolve, reject) => {
     const scan = TPLSmartDevice.scan();
     const timeoutId = setTimeout(() => {
       scan.stop();
       reject(new Error("Timeout looking for " + name));
     }, 4000);
     scan.on("light", async (light: Device) => {
+      if (light.name) {
+        foundDevices.set(light.name, light);
+      }
+      console.log("Scan found", light.name || `unnamed device ${light.ip}`);
       if (light.name === name) {
-        console.log("Found light", light);
+        console.log("Found light while scanning:", light.name, light.ip);
         scan.stop();
         clearTimeout(timeoutId);
         resolve(light);
       }
     });
-  });
+  }).finally(() => (searchInProgress = undefined));
+
+  return searchInProgress;
 }
 
 export function getLight(name: string, ip?: string) {
