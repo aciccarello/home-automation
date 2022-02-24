@@ -13,7 +13,7 @@ const bash = Deno.run({
 
 const CAMERA_LOG = "CMIOHardware.cpp";
 const AUDIO_START_LOG = "kTCCServiceMicrophone";
-const AUDIO_STOP_LOG = "stopAudioEngine";
+const AUDIO_STOP_LOG = "HALS_IOEngine2::StopIO";
 
 // Server loop running inside IIFE
 (async () => {
@@ -28,7 +28,10 @@ const AUDIO_STOP_LOG = "stopAudioEngine";
       let event: string | undefined = undefined;
       if (line.includes(AUDIO_START_LOG)) {
         event = "audio started";
-      } else if (line.includes(AUDIO_STOP_LOG)) {
+      } else if (
+        line.includes(AUDIO_STOP_LOG) &&
+        !(await isMicrophoneStillConnected())
+      ) {
         event = "audio stopped";
       } else if (line.includes(CAMERA_LOG)) {
         if (line.includes("StartStream")) {
@@ -56,3 +59,31 @@ const AUDIO_STOP_LOG = "stopAudioEngine";
 })();
 
 console.log("Server started");
+
+/**
+ * Check if audio device is still connected.
+ *
+ * This is needed because "HALS_IOEngine2::StopIO" seems to be called too frequently
+ *
+ * Inspired by https://stackoverflow.com/a/66070592/4252741
+ * May not work with bluetooth headphones according to comments
+ */
+async function isMicrophoneStillConnected() {
+  const ioreg = Deno.run({
+    cmd: ["ioreg", "-l"],
+    stdout: "piped",
+    stdin: "piped",
+  });
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  for await (const line of readLines(ioreg.stdout)) {
+    if (line.includes("IOAudioEngineState")) {
+      console.log("Line", line);
+      if (line.includes('"IOAudioEngineState" = 1')) {
+        console.log("Microphone is determined to be on");
+        return true;
+      }
+    }
+  }
+  console.log("Microphone is determined to be off");
+  return false;
+}
