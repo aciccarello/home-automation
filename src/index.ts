@@ -1,6 +1,6 @@
 import Koa from "koa";
 import Router from "@koa/router";
-import koaBody from "koa-body";
+import { koaBody } from "koa-body";
 import { uiRoute } from "./ui.js";
 import { sleepRoute } from "./sleep.js";
 import { debugRoute, deviceRoute } from "./tp-link.js";
