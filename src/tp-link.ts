@@ -11,7 +11,7 @@ export const bedroomLamp = getLight(
 );
 export const statusLamp = getLight(
   "Living Room Lamp",
-  process.env.STATUS_LAMP_IP
+  process.env.STATUS_LAMP_IP || "0" // Disabled for now
 );
 export const officeLamp = getSwitch("Office Lamp", process.env.OFFICE_LAMP_IP);
 export const officeSwitch = getDimmerSwitch(
