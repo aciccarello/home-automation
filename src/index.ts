@@ -3,6 +3,7 @@ import Router from "@koa/router";
 import { koaBody } from "koa-body";
 import { uiRoute } from "./ui.js";
 import { sleepRoute } from "./sleep.js";
+import { toggleRoute, deviceSwitchRoute } from "./device-switch.js";
 import { debugRoute, deviceRoute } from "./tp-link.js";
 import { onAirRoute } from "./on-air.js";
 
@@ -14,7 +15,9 @@ router
   .post("/", debugRoute)
   .get("/devices", deviceRoute)
   .post("/on-air", onAirRoute)
-  .post("/sleep", sleepRoute);
+  .post("/sleep", sleepRoute)
+  .get("/switch", toggleRoute)
+  .post("/switch", deviceSwitchRoute);
 
 app
   .use(
